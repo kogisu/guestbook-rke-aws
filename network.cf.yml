@@ -8,7 +8,7 @@ Parameters:
     Description: IP range (CIDR notation)
     Type: String
     Default: 10.0.0.0/16
-  PublicSubnet1Cidr:
+  PublicSubnetCidr:
     Type: String
     Default: 10.0.0.0/24
   
@@ -27,19 +27,17 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref EnvironmentName
-  GatewayAttachment:
-    Type: AWS::EC2::VPCGatewatAttachment
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       InternetGatewayId: !Ref InternetGateway
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Ref EnvironmentName
-  PublicSubnet1:
+      VpcId: !Ref VPC 
+  PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
+      VpcId: !Ref VPC
       AvailabilityZone: !Select [0, !GetAZs '']
-      CidrBlock: !Ref PublicSubnet1Cidr
+      CidrBlock: !Ref PublicSubnetCidr
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -57,15 +55,11 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
       RouteTableId: !Ref PublicRouteTable
-  PublicRouteTableAssociation1:
+  PublicRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref PublicSubnet1
-  PublicEip1:
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
+      SubnetId: !Ref PublicSubnet
  
 Outputs:
   VPC:
@@ -75,11 +69,11 @@ Outputs:
       Name: !Sub ${EnvironmentName}-VPCID
   VpcPublicRouteTable:
     Description: Public Routing
-    Value: !Ref PublicRouteTable1
+    Value: !Ref PublicRouteTable
     Export:
       Name: !Sub ${EnvironmentName}-PUB-RT
   PublicSubnet:
-    Description: A list of public subnets
-    Value: !Ref PublicSubnet1 
+    Description: Public Subnet
+    Value: !Ref PublicSubnet
     Export:
       Name: !Sub ${EnvironmentName}-PUB-SN

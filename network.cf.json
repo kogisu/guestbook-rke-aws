@@ -8,7 +8,7 @@
     "ParameterValue": "10.0.0.0/16"
   },
   {
-    "ParameterKey": "PublicSubnet1Cidr",
+    "ParameterKey": "PublicSubnetCidr",
     "ParameterValue": "10.0.0.0/24"
   }
 ]
