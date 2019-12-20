@@ -1,3 +1,6 @@
+Description: >
+  Cloud Servers | RKE Cluster
+
 Parameters:
   EnvironmentName:
     Type: String
@@ -68,15 +71,15 @@ Resources:
   WebAppLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
-      ImageId: ami-04b9e92b5572fa0d1
-      UserData:
-        Fn::Base64: !Sub |
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          add-apt-repository "deb [arch=amd64] \
-            https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-          apt-get update
-          apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu
-          usermod -a -G docker ubuntu
+      ImageId: ami-06d51e91cea0dac8d
+      # UserData:
+      #   Fn::Base64: !Sub |
+      #     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      #     add-apt-repository "deb [arch=amd64] \
+      #       https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+      #     apt-get update
+      #     apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu
+      #     usermod -a -G docker ubuntu
       InstanceType: t2.micro
       IamInstanceProfile:
         Ref: InstanceProfile
@@ -89,10 +92,10 @@ Resources:
   WebAppGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
+      MinSize: !Ref MinAutoScalingSize
+      MaxSize: !Ref MaxAutoScalingSize
       VPCZoneIdentifier:
-        Fn::ImportValue:
-          !Sub "${EnvironmentName}-PUB-SN"
+        - Fn::ImportValue:
+            !Sub "${EnvironmentName}-PUB-SN"
       LaunchConfigurationName:
         Ref: WebAppLaunchConfig
-
-      

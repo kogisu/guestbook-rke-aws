@@ -1,5 +1,5 @@
 Description: >
-  Kent Ogisu | Udacity 2019 | Capstone Project
+  Cloud Network | Single Subnet
 
 Parameters:
   EnvironmentName:
@@ -67,7 +67,7 @@ Outputs:
     Value: !Ref VPC
     Export:
       Name: !Sub ${EnvironmentName}-VPCID
-  VpcPublicRouteTable:
+  PublicRouteTable:
     Description: Public Routing
     Value: !Ref PublicRouteTable
     Export:
