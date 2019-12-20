@@ -1,0 +1,134 @@
+Parameters:
+  EnvironmentName:
+    Type: String
+  MinAutoScalingSize:
+    Type: String
+  MaxAutoScalingSize:
+    Type: String
+
+Resources:
+  AccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 'ec2:Describe'
+            Resource: '*'
+          - Effect: Allow
+            Action: 'ec2:AttachVolume'
+            Resource: '*'
+          - Effect: Allow
+            Action: 'ec2:DetachVolume'
+            Resource: '*'
+          - Effect: Allow
+            Action: ['ec2:*']
+            Resource: ['*']
+          - Effect: Allow
+            Action: ['elasticloadbalancing:*']
+            Resource: ['*']
+  RkeTrustRole:
+    Type: AWS::IAM::ROLE
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - !Ref AccessPolicy
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Roles
+        - !Ref RkeTrustRole
+  WebServerSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to our hosts
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
+      SecurityGroupEgress: 
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+  WebAppLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: ami-04b9e92b5572fa0d1
+      UserData:
+        Fn::Base64: !Sub |
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          add-apt-repository "deb [arch=amd64] \
+            https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          apt-get update
+          apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu
+          usermod -a -G docker ubuntu
+      InstanceType: t2.micro
+      SecurityGroups:
+        - Ref: WebAppSecGroup
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: '10'
+  WebAppGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        Fn::ImportValue:
+          !Sub "${EnvironentName}-PRI-SN"
+      LaunchConfigurationName:
+        Ref: WebAppLaunchConfig
+
+  WebAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimoutSeconds: 6
+      HealthyThresholdCount: 3
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
+  
+  WebAppListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: 
+            Ref: WebAppTargetGroup
+        LoadBalancerArn:
+          Ref: WebAppLB 
+        Port: 80
+        Protocol: HTTP
+  WebAppListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: WebAppTargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values: [/]
+      ListenerArn: 
+        Ref: WebAppListener
+      Priority: 1
+      

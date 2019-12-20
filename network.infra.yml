@@ -3,7 +3,6 @@ Description: >
 
 Parameters:
   EnvironmentName:
-    Description: Network-based environment
     Type: String
   VpcCidr:
     Description: IP range (CIDR notation)

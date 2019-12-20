@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "UdacityCapstone"
+  },
+  {
+    "ParameterKey": "MinAutoScalingSize",
+    "ParameterValue": 4
+  },
+  {
+    "ParameterKey": "MaxAutoScalingSize",
+    "ParameterValue": 4
+  }
+]
