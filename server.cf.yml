@@ -2,14 +2,15 @@ Parameters:
   EnvironmentName:
     Type: String
   MinAutoScalingSize:
-    Type: String
+    Type: Number
   MaxAutoScalingSize:
-    Type: String
+    Type: Number
 
 Resources:
   AccessPolicy:
     Type: AWS::IAM::Policy
     Properties:
+      PolicyName: RkePolicy
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -28,24 +29,26 @@ Resources:
           - Effect: Allow
             Action: ['elasticloadbalancing:*']
             Resource: ['*']
-  RkeTrustRole:
-    Type: AWS::IAM::ROLE
+      Roles:
+        - !Ref RkeRole
+  RkeRole:
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
-              Service: 'ec2.amazonaws.com'
-            Action: 'sts:AssumeRole'
-      Policies:
-        - !Ref AccessPolicy
+              Service: 
+                - ec2.amazonaws.com
+            Action: 
+              - 'sts:AssumeRole'
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties: 
-      Roles
-        - !Ref RkeTrustRole
-  WebServerSecGroup:
+      Roles:
+        - !Ref RkeRole
+  ServerSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow http to our hosts
@@ -75,8 +78,10 @@ Resources:
           apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu
           usermod -a -G docker ubuntu
       InstanceType: t2.micro
+      IamInstanceProfile:
+        Ref: InstanceProfile
       SecurityGroups:
-        - Ref: WebAppSecGroup
+        - Ref: ServerSecGroup
       BlockDeviceMappings:
         - DeviceName: "/dev/sdk"
           Ebs:
@@ -86,49 +91,8 @@ Resources:
     Properties:
       VPCZoneIdentifier:
         Fn::ImportValue:
-          !Sub "${EnvironentName}-PRI-SN"
+          !Sub "${EnvironmentName}-PUB-SN"
       LaunchConfigurationName:
         Ref: WebAppLaunchConfig
 
-  WebAppTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      HealthCheckEnabled: true
-      HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /
-      HealthCheckPort: 80
-      HealthCheckProtocol: HTTP
-      HealthCheckTimoutSeconds: 6
-      HealthyThresholdCount: 3
-      Port: 80
-      Protocol: HTTP
-      UnhealthyThresholdCount: 5
-      VpcId:
-        Fn::ImportValue:
-          !Sub "${EnvironmentName}-VPCID"
-  
-  WebAppListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      DefaultActions:
-        - Type: forward
-          TargetGroupArn: 
-            Ref: WebAppTargetGroup
-        LoadBalancerArn:
-          Ref: WebAppLB 
-        Port: 80
-        Protocol: HTTP
-  WebAppListenerRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      Actions:
-        - Type: forward
-          TargetGroupArn:
-            Ref: WebAppTargetGroup
-      Conditions:
-        - Field: path-pattern
-          Values: [/]
-      ListenerArn: 
-        Ref: WebAppListener
-      Priority: 1
       
