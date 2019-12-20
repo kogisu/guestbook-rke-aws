@@ -14,7 +14,8 @@ create_stack() {
   aws cloudformation create-stack \
     --stack-name $1 \
     --template-body file://$2 \
-    --parameters file://$3
+    --parameters file://$3 \
+    --capabilities CAPABILITY_IAM
   return 0
 }
 
@@ -30,6 +31,7 @@ update_stack() {
 if [ "$#" -lt 2 ]
 then
   echo 'You must enter at least two parameters'
+  exit 1
 fi
 
 if [ $1 != 'create' -a $1 != 'update' ]
