@@ -1,17 +1,21 @@
 pipeline {
   stages {
-    stage('Install dependencies') {
-      steps {
-        sh 'wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
-            chmod +x /bin/hadolint'
-      }
+    stage ("lint dockerfile") {
+        agent {
+            docker {
+                image 'hadolint/hadolint:latest-debian'
+            }
+        }
+        steps {
+            sh 'hadolint Dockerfile | tee -a hadolint_lint.txt'
+        }
+        post {
+            always {
+                archiveArtifacts 'hadolint_lint.txt'
+            }
+        }
     }
-    stage('Linting') {
-      steps {
-        sh '/bin/hadolint Dockerfile'
-      }
-    }
-    stage('Deploying') {
+    stage('deploy') {
       steps {
         sh 'kubectl apply -f guestbook/'
       }
