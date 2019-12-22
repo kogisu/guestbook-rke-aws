@@ -15,15 +15,21 @@ Parameters:
     Type: String
     Default: cloud
     ConstraintDescription: Must be an existing keypair
+  ClusterName:
+    Type: String
+    Default: cloudcluster
 
 Resources:
   AccessPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: RkePolicy
+      PolicyName: rancher-policy
       PolicyDocument:
         Version: 2012-10-17
         Statement:
+          - Effect: Allow
+            Action: ['autoscaling:*']
+            Resource: ['*']
           - Effect: Allow
             Action: 'ec2:Describe*'
             Resource: '*'
@@ -42,11 +48,18 @@ Resources:
           - Effect: Allow
             Action: ['iam:CreateServiceLinkedRole']
             Resource: ['*']
+          - Effect: Allow
+            Action: 'kms:DescribeKey'
+            Resource: '*'
+          - Effect: Allow
+            Action: ['ecr:*']
+            Resource: ['*']
       Roles:
         - !Ref RkeRole
   RkeRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: rancher-node
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -56,9 +69,15 @@ Resources:
                 - ec2.amazonaws.com
             Action: 
               - 'sts:AssumeRole'
+          - Effect: Allow
+            Principal:
+              'AWS': 'arn:aws:iam::501970535089:role/rancher-node' 
+            Action:
+              - 'sts:AssumeRole'
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
-    Properties: 
+    Properties:
+      InstanceProfileName: rancher-node
       Roles:
         - !Ref RkeRole
   ServerSecGroup:
@@ -86,6 +105,9 @@ Resources:
       #   FromPort: 80
       #   ToPort: 80
       #   CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: !Sub kubernetes.io/cluster/${ClusterName}
+          Value: owned
   WebAppLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -106,7 +128,7 @@ Resources:
           sudo chmod a+rwx /var/run/docker.sock
       InstanceType: t2.micro
       IamInstanceProfile:
-        Ref: InstanceProfile
+        rancher-node
       SecurityGroups:
         - Ref: ServerSecGroup
       BlockDeviceMappings:
@@ -123,3 +145,7 @@ Resources:
             !Sub "${EnvironmentName}-PUB-SN"
       LaunchConfigurationName:
         Ref: WebAppLaunchConfig
+      Tags:
+        - Key: !Sub kubernetes.io/cluster/${ClusterName}
+          Value: owned
+          PropagateAtLaunch: true
