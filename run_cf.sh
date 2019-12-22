@@ -15,7 +15,8 @@ create_stack() {
     --stack-name $1 \
     --template-body file://$2 \
     --parameters file://$3 \
-    --capabilities CAPABILITY_IAM
+    --capabilities CAPABILITY_IAM \
+    --capabilities CAPABILITY_NAMED_IAM
   return 0
 }
 
@@ -25,7 +26,15 @@ update_stack() {
   --stack-name $1 \
   --template-body file://$2 \
   --parameters file://$3 \
-  --capabilities CAPABILITY_IAM
+  --capabilities CAPABILITY_IAM \
+  --capabilities CAPABILITY_NAMED_IAM
+  return 0
+}
+
+delete_stack() {
+  echo "[$1] deleting $stack_type stack"
+  aws cloudformation delete-stack \
+  --stack-name $1
   return 0
 }
 
@@ -35,9 +44,9 @@ then
   exit 1
 fi
 
-if [ $1 != 'create' -a $1 != 'update' ]
+if [ $1 != 'create' -a $1 != 'update' -a $1 != 'delete' ]
 then
-  echo 'First parameter must be "create" or "update"'
+  echo 'First parameter must be "create", "update" or "delete"'
   exit 1
 fi
 
@@ -55,11 +64,19 @@ then
   else
     create_stack $server_stack $server_template $server_params
   fi
-else
+elif [ $1 = 'update' ]
+then
   if [ $2 == 'network' ]
   then
     update_stack $network_stack $network_template $network_params
   else
     update_stack $server_stack $server_template $server_params
+  fi
+else
+  if [ $2 == 'network' ]
+  then
+    delete_stack $network_stack
+  else
+    delete_stack $server_stack
   fi
 fi
