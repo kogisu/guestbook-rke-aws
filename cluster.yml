@@ -1,0 +1,40 @@
+# If you intened to deploy Kubernetes in an air-gapped environment,
+# please consult the documentation on how to configure custom RKE images.
+---
+cloud_provider:
+  name: aws
+
+nodes:
+- address: 
+  internal_address: 
+  port: "22"
+  role:
+  - controlplane
+  - etcd
+  user: ubuntu
+  docker_socket: /var/run/docker.sock
+  ssh_key_path: /Users/kento/.ssh/cloud.pem
+- address: 
+  internal_address: 
+  port: "22"
+  role:
+  - worker
+  user: ubuntu
+  docker_socket: /var/run/docker.sock
+  ssh_key_path: /Users/kento/.ssh/cloud.pem
+- address: 
+  port: "22"
+  internal_address: 
+  role:
+  - worker
+  user: ubuntu
+  docker_socket: /var/run/docker.sock
+  ssh_key_path: /Users/kento/.ssh/cloud.pem
+- address: 
+  internal_address: 
+  port: "22"
+  role:
+  - worker
+  user: ubuntu
+  docker_socket: /var/run/docker.sock
+  ssh_key_path: /Users/kento/.ssh/cloud.pem
