@@ -6,8 +6,10 @@ Parameters:
     Type: String
   MinAutoScalingSize:
     Type: Number
+    Default: 4
   MaxAutoScalingSize:
     Type: Number
+    Default: 4
   KeyName:
     Description: 'Key name for existing ssh key pair'
     Type: String
@@ -23,7 +25,7 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
-            Action: 'ec2:Describe'
+            Action: 'ec2:Describe*'
             Resource: '*'
           - Effect: Allow
             Action: 'ec2:AttachVolume'
@@ -36,6 +38,9 @@ Resources:
             Resource: ['*']
           - Effect: Allow
             Action: ['elasticloadbalancing:*']
+            Resource: ['*']
+          - Effect: Allow
+            Action: ['iam:CreateServiceLinkedRole']
             Resource: ['*']
       Roles:
         - !Ref RkeRole
@@ -87,13 +92,18 @@ Resources:
       ImageId: ami-06d51e91cea0dac8d
       KeyName: !Ref KeyName
       UserData:
-        Fn::Base64: !Sub |
+        Fn::Base64: |
+          #!/bin/bash
+          sudo su
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-          sudo apt-get update
-          sudo apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu
-          sudo usermod -aG docker $USER
-          newgrp docker
+          add-apt-repository \
+            "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) \
+            stable"
+          apt-get update
+          apt-get install -y docker-ce
+          usermod -aG docker $USER
+          sudo chmod a+rwx /var/run/docker.sock
       InstanceType: t2.micro
       IamInstanceProfile:
         Ref: InstanceProfile
