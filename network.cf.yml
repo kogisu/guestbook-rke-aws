@@ -11,6 +11,9 @@ Parameters:
   PublicSubnetCidr:
     Type: String
     Default: 10.0.0.0/24
+  ClusterName:
+    Type: String
+    Default: cloudcluster
   
 Resources:
   VPC:
@@ -42,6 +45,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+        - Key: !Sub kubernetes.io/cluster/${ClusterName}
+          Value: owned
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
