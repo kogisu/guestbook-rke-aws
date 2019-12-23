@@ -23,7 +23,7 @@ pipeline {
     }
 
     stage('Deploy App') {
-      step {
+      steps {
         echo 'deploying app'
         // script {
         //   kubernetesDeploy(configs: "guestbook/", kubeconfigId: "mykubeconfig")
