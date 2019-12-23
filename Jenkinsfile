@@ -11,29 +11,23 @@ pipeline {
       }
     }
 
-    stage('Build image') {
+    stage('Build and Push Image') {
       steps {
-        script {
-          dockerImage = docker.build "$image":latest
-        }
+        echo 'Building Docker image'
+        withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+          sh "docker login -u ${env.dockerUser} -p ${env.dockerPassword}"
+          sh "docker build -t ${image} ."
+          sh "docker push ${image}"
       }
-    }
-
-    stage('Push Image') {
-      steps {
-        script {
-          docker.withRegistry( "" ) {
-            dockerImage.push()
-          }
-        }
       }
     }
 
     stage('Deploy App') {
-      steps {
-        script {
-          kubernetesDeploy(configs: "guestbook/", kubeconfigId: "mykubeconfig")
-        }
+      step {
+        echo 'deploying app'
+        // script {
+        //   kubernetesDeploy(configs: "guestbook/", kubeconfigId: "mykubeconfig")
+        // }
       }
     }
 
