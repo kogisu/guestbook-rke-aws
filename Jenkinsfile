@@ -7,9 +7,9 @@ pipeline {
             }
         }
         steps {
-            sh 'hadolint Dockerfile | tee -a hadolint_lint.txt'
+            sh 'hadolint nginx/ | tee -a hadolint_lint.txt'
         }
-        post {
+        post 
             always {
                 archiveArtifacts 'hadolint_lint.txt'
             }
