@@ -1,9 +1,13 @@
 pipeline {
-  agent none
+  agent {
+    dockerfile true
+  }
   stages {
+    stage('Starting up') {
+      echo 'Running pipeline'
+    }
     stage ("lint dockerfile") {
       agent {
-        label 'docker'
         docker {
           image 'hadolint/hadolint:latest-debian'
         }
