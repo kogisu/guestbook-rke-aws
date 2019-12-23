@@ -1,6 +1,7 @@
 pipeline {
-
-  def registry = 'kogisu12/nginx'
+  environment {
+    image = 'kogisu12/nginx'
+  }
   agent any
   stages {
     stage('Checkout Source') {
@@ -13,7 +14,7 @@ pipeline {
     stage('Build image') {
       steps{
         script {
-          dockerImage = docker.build "$registry":latest
+          dockerImage = docker.build "$image":latest
         }
       }
     }
