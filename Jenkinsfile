@@ -4,7 +4,9 @@ pipeline {
   }
   stages {
     stage('Starting up') {
-      echo 'Running pipeline'
+      steps {
+        echo 'Running pipeline'
+      }
     }
     stage ("lint dockerfile") {
       agent {
