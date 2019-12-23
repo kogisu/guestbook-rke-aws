@@ -1,6 +1,8 @@
 pipeline {
   environment {
-    image = 'kogisu12/nginx'
+    registry = 'kogisu12/nginx'
+    registryCredential = 'docker'
+    dockerImage = ''
   }
   agent any
   stages {
@@ -11,14 +13,21 @@ pipeline {
       }
     }
 
-    stage('Build and Push Image') {
+    stage('Building image') {
       steps {
-        echo 'Building Docker image'
-        withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-          sh "docker login -u ${env.dockerUser} -p ${env.dockerPassword}"
-          sh "docker build -t ${image} ."
-          sh "docker push ${image}"
+        script {
+          dockerImage = docker.build registry + ":latest"
+        }
       }
+    }
+
+    stage('Deploy Image') {
+      steps {    
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+          }
+        }
       }
     }
 
