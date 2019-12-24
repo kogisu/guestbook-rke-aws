@@ -24,10 +24,7 @@ node {
   }
 
   stage('Deploy App') {
-      steps {
-        script {
-          kubernetesDeploy(configs: "/guestbook", kubeconfigId: "mykubeconfig")
-        }
-      }
-    }
+    echo 'deploying to cluster'
+    kubernetesDeploy(configs: "/guestbook", kubeconfigId: "mykubeconfig")
+  }
 }
