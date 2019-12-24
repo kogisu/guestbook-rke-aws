@@ -4,7 +4,9 @@ pipeline {
     registryCredential = 'docker'
     dockerImage = ''
   }
-  agent any
+  agent {
+    label 'docker'
+  }
   stages {
     stage('Checkout Source') {
       steps {
@@ -14,6 +16,11 @@ pipeline {
     }
 
     stage('Building image') {
+      agent {
+        docker {
+          label 'docker'
+        }
+      }
       steps {
         script {
           dockerImage = docker.build registry + ":latest"
@@ -22,6 +29,11 @@ pipeline {
     }
 
     stage('Deploy Image') {
+      agent {
+        docker {
+          label 'docker'
+        }
+      }
       steps {    
         script {
           docker.withRegistry( '', registryCredential ) {
