@@ -25,6 +25,6 @@ node {
 
   stage('Deploy App') {
     echo 'deploying to cluster'
-    kubernetesDeploy(configs: "/guestbook", kubeconfigId: "mykubeconfig")
+    kubernetesDeploy(configs: "webapp.yml", kubeconfigId: "mykubeconfig")
   }
 }
