@@ -20,7 +20,7 @@ node {
     echo 'Building Docker image and pushing to registry...'
     withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
       sh "docker login -u ${env.dockerUser} -p ${env.dockerPassword}"
-      sh "docker build -t ${registry}:latest ."
+      sh "docker build -t ${registry}:$BUILD_NUMBER ."
       sh "docker push ${registry}"
     }
   }
