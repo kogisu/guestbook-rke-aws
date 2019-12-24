@@ -1,13 +1,17 @@
 pipeline {
   agent any
-  stage('Initialize') {
-    def dockerHome = tool 'docker'
-    env.PATH = "${dockerHome}/bin:${env.PATH}"
-  }
-  stage('Checking env') {
-    steps {
-      echo 'Checking env'
-      sh 'docker -v'
+  stages {
+    stage('Initialize') {
+      steps {
+        def dockerHome = tool 'docker'
+        env.PATH = "${dockerHome}/bin:${env.PATH}"
+      }
+    }
+    stage('Checking env') {
+      steps {
+        echo 'Checking env'
+        sh 'docker -v'
+      }
     }
   }
 }
