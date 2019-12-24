@@ -3,7 +3,7 @@ node {
   def dockerImage = ""
   stage('Initialize') {
     def dockerHome = tool 'docker'
-    env.PATH = "${dockerHome}/bin:${env.PATH}:/usr/bin"
+    env.PATH = "${dockerHome}/bin:${env.PATH}:/usr/bin:/usr/bin/tidy"
   }
   stage('Check out git repo') {
       echo 'Checking out'
