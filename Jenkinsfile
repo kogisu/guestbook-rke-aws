@@ -10,7 +10,7 @@ node {
   }
 
   stage('Build image') {
-    dockerImage = docker.build registry + ":latest"
+    dockerImage = docker.build(registry + ":latest", "./nginx")
   }
 
   stage('Push Image') {
