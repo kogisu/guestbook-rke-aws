@@ -13,9 +13,9 @@ node {
     echo 'Checking env'
     sh 'docker -v'
   }
-  stage('Lint HTML') {
-    sh 'tidy -q -e *.html'
-  }
+  // stage('Lint HTML') {
+  //   sh 'tidy -q -e *.html'
+  // }
   stage('Build image / Push to registry') {
     echo 'Building Docker image and pushing to registry...'
     withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
