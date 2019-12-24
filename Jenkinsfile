@@ -14,9 +14,7 @@ node {
     sh 'docker -v'
   }
   stage('Lint HTML') {
-    steps {
-      sh 'tidy -q -e *.html'
-    }
+    sh 'tidy -q -e *.html'
   }
   stage('Build image / Push to registry') {
     echo 'Building Docker image and pushing to registry...'
