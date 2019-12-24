@@ -1,4 +1,5 @@
 node {
+  def registry = 'kogisu12/nginx'
   stage('Initialize') {
     def dockerHome = tool 'docker'
     env.PATH = "${dockerHome}/bin:${env.PATH}"
@@ -6,5 +7,13 @@ node {
   stage('Checking env') {
     echo 'Checking env'
     sh 'docker -v'
+  }
+  stage('Build image') {
+    echo 'Building Docker image...'
+    withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+      sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
+      sh "docker build -t ${registry}:latest ."
+      sh "docker push ${registry}"
+    }
   }
 }
