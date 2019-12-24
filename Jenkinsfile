@@ -13,7 +13,11 @@ node {
     echo 'Checking env'
     sh 'docker -v'
   }
-
+  stage('Lint HTML') {
+    steps {
+      sh 'tidy -q -e *.html'
+    }
+  }
   stage('Build image / Push to registry') {
     echo 'Building Docker image and pushing to registry...'
     withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
@@ -25,6 +29,6 @@ node {
 
   stage('Deploy App') {
     echo 'deploying to cluster'
-    kubernetesDeploy(configs: "webapp.yml", kubeconfigId: "mykubeconfig")
+    kubernetesDeploy(configs: "webapp.yaml", kubeconfigId: "mykubeconfig")
   }
 }
