@@ -19,6 +19,8 @@ node {
   }
 
   stage('Push Image') {
+    echo 'pushing image'
+    echo "image: ${dockerImage}"
     docker.withRegistry( "", 'docker' ) {
       dockerImage.push()
     }
