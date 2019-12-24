@@ -4,6 +4,10 @@ node {
     def dockerHome = tool 'docker'
     env.PATH = "${dockerHome}/bin:${env.PATH}"
   }
+  stage('Check out git repo') {
+      echo 'Checking out'
+      checkout scm
+    }
   stage('Checking env') {
     echo 'Checking env'
     sh 'docker -v'
